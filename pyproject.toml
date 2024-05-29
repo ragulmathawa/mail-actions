@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mail-actions"
+version = "0.1.0"
+description = ""
+authors = ["RagulMathawa <ragulmathawa@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+google-api-python-client = "^2.130.0"
+google-auth-httplib2 = "^0.2.0"
+google-auth-oauthlib = "^1.2.0"
+black = "^24.4.2"
+progress = "^1.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
