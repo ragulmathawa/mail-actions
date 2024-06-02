@@ -1,6 +1,7 @@
 from mail_actions.gmail.mailbox import MailBox
 from mail_actions.gmail.service import GMailService
 from mail_actions.ruleparser import Rule, RuleFilter
+from progress.counter import Counter
 
 
 class RuleEngine:
@@ -11,12 +12,24 @@ class RuleEngine:
 
     def apply_rule(self, rule: Rule):
         (sql, opts) = build_sql(rule)
-
+        print("Applying Rule : ", rule["name"])
+        print(
+            "Actions: ",
+        )
+        for action in rule["actions"]:
+            if action["type"] == "move":
+                print(f"\tMove to {action.get('value')}")
+            elif action["type"] == "read":
+                print(f"\tMark as read")
+            elif action["type"] == "unread":
+                print(f"\tMark as unread")
+            else:
+                print(f"Unknown action type: {action.get('type')}")
+        counter = Counter("Processed messages : ")
         for message in self.mailbox.get_messages_sql(sql, opts):
-            print(
-                f'{message.get("internalDate")} - {message.get("from_")}\n\t {message.get("subject")}'
-            )
             self.mailbox.apply_action(rule["actions"], message)
+            counter.next()
+        counter.finish()
         pass
 
 

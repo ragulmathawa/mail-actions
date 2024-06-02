@@ -9,6 +9,8 @@ from progress.counter import Counter
 
 from typing import TypedDict
 
+from mail_actions.ruleparser import RuleAction
+
 
 class MailBoxStats(TypedDict):
     """
@@ -137,15 +139,18 @@ class MailBox:
         deleted = 0
         progress = Bar("Deleting messages", max=len(ids))
         for id in ids:
-            with connect("store.db") as conn:
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM messages WHERE id=?", (id,))
-                cursor.execute("DELETE FROM headers WHERE message_id=?", (id,))
-                conn.commit()
+            self.delete_message(id)
             deleted = deleted + 1
             progress.next()
         progress.finish()
         return deleted
+
+    def delete_message(self, id: str):
+        with connect("store.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM messages WHERE id=?", (id,))
+            cursor.execute("DELETE FROM headers WHERE message_id=?", (id,))
+            conn.commit()
 
     def fetch_messages(self, ids: set[str]):
         """
@@ -266,7 +271,7 @@ class MailBox:
         Returns:
             A set of message IDs (strings) representing the messages in the remote mailbox.
         """
-        limit = 100
+        limit = 10000
         allIds = set()
         pageToken = None
         counter = Counter("Scanning Gmail Messages: ")
@@ -352,7 +357,35 @@ class MailBox:
                 yield message
         pass
 
-    def apply_action(self, actions: dict, message: Message):
+    def apply_action(self, actions: list[RuleAction], message: Message):
+
+        for action in actions:
+            if action["type"] == "move":
+                labelId = self.gmail_service.get_labels_by_name(action["value"])
+                if labelId:
+                    if labelId != "INBOX":
+                        self.gmail_service.update_labels(
+                            message.get("id"), [labelId], ["INBOX"]
+                        )
+                    else:
+                        self.gmail_service.update_labels(
+                            message.get("id"), [labelId], []
+                        )
+                else:
+                    raise Exception("Invalid label name")
+
+            elif action["type"] == "unread":
+
+                self.gmail_service.update_labels(message.get("id"), ["UNREAD"], [])
+
+            elif action["type"] == "read":
+                self.gmail_service.update_labels(message.get("id"), [], ["UNREAD"])
+            else:
+                raise Exception("Invalid action type")
+            msg = self.gmail_service.get_message(message.get("id"))
+            self.delete_message(message.get("id"))
+            self.save_message(msg)
+
         pass
 
 

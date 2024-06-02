@@ -64,7 +64,6 @@ def main():
             print("No rules found")
             return
         for rule in rules:
-            print(f"Applying rule: {rule.get('name')}")
             rule_engine.apply_rule(rule)
     except Exception as e:
         raise e

@@ -180,6 +180,16 @@ class GMailService:
                 f"Http error with status code {e.response.status_code} occurred while fetching labels, {e.response.content}"
             )
 
+    def get_labels_by_name(self, labelName: str) -> dict:
+        if not labelName:
+            return None
+
+        labels = self.get_labels()
+        for label in labels.get("labels"):
+            if label.get("name") == labelName.strip():
+                return label.get("id")
+        return None
+
     def get_message_list(self, maxResults=None, pageToken=None) -> MessageList:
         """
         Fetches the messages for the user.
@@ -227,6 +237,35 @@ class GMailService:
         except HTTPError as e:
             raise Exception(
                 f"Http error with status code {e.response.status_code} occurred while fetching message, {e.response.content}"
+            )
+
+    def update_labels(
+        self, messageId: str, addLabelIds: list[str], removeLabelIds: list[str]
+    ) -> Message:
+        """
+        Updates the labels of a message.
+
+        Args:
+            messageId (str): The ID of the message to update.
+            addLabelIds (list[str]): The list of label IDs to add to the message.
+            removeLabelIds (list[str]): The list of label IDs to remove from the message.
+
+        Returns:
+            Message: A Message object containing the updated message.
+
+        Raises:
+            Exception: If an HTTP error occurs while updating the labels.
+        """
+        body = {"addLabelIds": addLabelIds, "removeLabelIds": removeLabelIds}
+        message = (
+            self.service.users().messages().modify(userId="me", id=messageId, body=body)
+        )
+        try:
+            response = message.execute()
+            return response
+        except HTTPError as e:
+            raise Exception(
+                f"Http error with status code {e.response.status_code} occurred while updating labels, {e.response.content}"
             )
 
     def close(self):
