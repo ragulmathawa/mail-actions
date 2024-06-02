@@ -2,6 +2,8 @@
 .DEFAULT_GOAL:= help
 run: ## Run
 	poetry run python mail_actions.py
+test:
+	poetry run python -m pytest .
 fmt: ## Format
 	poetry run python -m black .
 help:

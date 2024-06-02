@@ -8,7 +8,7 @@ import os as os
 from gmail.service import GMailService, Profile
 import auth as auth
 import progress.spinner as spinner
-from rule_engine import RuleEngine
+from ruleengine import RuleEngine
 import ruleparser as ruleparser
 
 def is_sync_needed(profile: Profile, stats: MailBoxStats):
@@ -60,7 +60,7 @@ def main():
     if is_sync_needed(profile, stats):
         mailbox.sync()
     try:
-        rules = ruleparser.load_rules()
+        rules = ruleparser.load_rules("rules.yaml")
         if len(rules) == 0:
             print("No rules found")
             return

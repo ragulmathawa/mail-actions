@@ -93,6 +93,7 @@ def build_string_filter_clause(filter: RuleFilter) -> tuple[str, list]:
     Raises:
         Exception: If an invalid field or operator is provided in the filter.
     """
+
     columnMap = {
         "date_received": "date_received",
         "date_sent": "date_sent",
@@ -148,12 +149,13 @@ def build_date_filter_clause(filter: RuleFilter) -> tuple[str, list]:
         build_date_filter_clause(filter)
         # Output: ("internalDate > datetime('now',?)", ["-2 days"])
     """
+
+    if not filter.get("value"):
+        raise Exception("Invalid value for date filter")
+
     columnMap = {
         "date_received": "internalDate",
         "date_sent": "internalDate",
-        "from": "from",
-        "to": "to",
-        "subject": "subject",
     }
     operatorMap = {
         "eq": "=",
@@ -181,7 +183,7 @@ def build_date_filter_clause(filter: RuleFilter) -> tuple[str, list]:
 
     if field == "date_sent":
         # same column name for both date_received and date_sent, but the labelIds should include SENT for date_sent
-        return f'( {column} {operator} {rhs} AND labelIds LIKE %"SENT"% )', [value]
+        return f'( "{column}" {operator} {rhs} AND labelIds LIKE %"SENT"% )', [value]
     return f'"{column}" {operator} {rhs}', [value]
 
 

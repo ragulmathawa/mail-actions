@@ -4,3 +4,4 @@ credentials.json
 **/__pycache__
 *.db
 rules.yaml
+.DS_Store

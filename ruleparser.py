@@ -21,7 +21,10 @@ class Rule(TypedDict):
     actions: list[RuleAction]
 
 
-def load_rules() -> list[Rule]:
+SCHEMA_FILE = "schema.json"
+
+
+def load_rules(rules_file) -> list[Rule]:
     """
     Load rules from the 'rules.yaml' file and validate them against the 'schema.json' file.
 
@@ -32,10 +35,10 @@ def load_rules() -> list[Rule]:
         Exception: If the rules file is invalid.
     """
     schema = None
-    with open("schema.json", "r") as stream:
+    with open(SCHEMA_FILE, "r") as stream:
         schema = yaml.safe_load(stream)
     rules = []
-    with open("rules.yaml", "r") as stream:
+    with open(rules_file, "r") as stream:
         rules = yaml.safe_load(stream)
         try:
             validate(rules, schema)
