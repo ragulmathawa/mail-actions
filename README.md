@@ -32,18 +32,14 @@ on the rules defined in the configuration file.
 
 ## TODO
 
-- Implement Rule Engine
-- Implement Actions
-  - Mark as Read
-  - Mark as Unread
-  - Move to Folder
-  - Delete
-  - Archive
 - Error Handling all over the app
 - Fallback & Retry Mechanism on Service API errors
 - Save Sync State to resume on exit
 - Implement Incremental Sync
 - Throttling of Mailbox Full Sync
+- Implement Actions
+  - Delete
+  - Archive
 
 ## Rules Configuration
 
