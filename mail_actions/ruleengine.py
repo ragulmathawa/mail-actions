@@ -30,6 +30,8 @@ class RuleEngine:
             self.mailbox.apply_action(rule["actions"], message)
             counter.next()
         counter.finish()
+        if counter.index == 0:
+            print("No messages to process")
         pass
 
 
