@@ -5,3 +5,4 @@ credentials.json
 *.db
 rules.yaml
 .DS_Store
+.coverage

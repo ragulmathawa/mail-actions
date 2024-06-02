@@ -1,5 +1,5 @@
 import pytest
-from ruleengine import (
+from mail_actions.ruleengine import (
     is_relative_date,
     build_date_filter_clause,
     build_string_filter_clause,

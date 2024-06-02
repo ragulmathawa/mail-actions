@@ -30,26 +30,26 @@ def get_credentials() -> Credentials:
     return creds
 
 
-def save_credentials(creds: Credentials):
+def save_credentials(creds: Credentials, token_file: str):
     """
     Saves the provided credentials to a file named "token.json".
 
     Args:
         creds (Credentials): The credentials object to be saved.
     """
-    with open("token.json", "w") as token:
+    with open(token_file, "w") as token:
         json.dump(json.loads(creds.to_json()), token)
 
 
-def get_saved_credentials() -> Credentials | None:
+def get_saved_credentials(token_file: str) -> Credentials | None:
     """
     Retrieves saved credentials from a token file.
 
     Returns:
         Credentials | None: The saved credentials if the token file exists, otherwise None.
     """
-    if not os.path.exists("token.json"):
+    if not os.path.exists(token_file):
         return None
-    with open("token.json", "r") as token:
+    with open(token_file, "r") as token:
         creds = json.load(token)
         return Credentials.from_authorized_user_info(creds)

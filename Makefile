@@ -1,7 +1,7 @@
 .PHONY: all
 .DEFAULT_GOAL:= help
 run: ## Run
-	poetry run python mail_actions.py
+	poetry run python mail_actions/cli.py
 test:
 	poetry run python -m pytest .
 fmt: ## Format

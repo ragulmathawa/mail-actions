@@ -1,13 +1,9 @@
-from gmail.mailbox import MailBox, MailBoxStats
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-import json as json
 import os as os
+import json as json
+from google.auth.transport.requests import Request
+from gmail.mailbox import MailBox, MailBoxStats
 from gmail.service import GMailService, Profile
 import auth as auth
-import progress.spinner as spinner
 from ruleengine import RuleEngine
 import ruleparser as ruleparser
 
@@ -37,17 +33,20 @@ def print_welcome(profile: Profile, stats: MailBoxStats):
     else:
         print("\nNo new messages\n")
 
+TOKEN_FILE = "token.json"
+RULES_FILE = "rules.yaml"
+
 
 def main():
-    creds = auth.get_saved_credentials()
+    creds = auth.get_saved_credentials(TOKEN_FILE)
     if not creds:
         # if creds not found, get creds
         creds = auth.get_credentials()
-        auth.save_credentials(creds)
+        auth.save_credentials(creds, TOKEN_FILE)
     if not creds.valid:
         # if creds are not valid, refresh creds
         creds.refresh(Request())
-        auth.save_credentials(creds)
+        auth.save_credentials(creds, TOKEN_FILE)
 
     service = GMailService(creds)
     mailbox = MailBox(service)
@@ -60,7 +59,7 @@ def main():
     if is_sync_needed(profile, stats):
         mailbox.sync()
     try:
-        rules = ruleparser.load_rules("rules.yaml")
+        rules = ruleparser.load_rules(RULES_FILE)
         if len(rules) == 0:
             print("No rules found")
             return

@@ -1,6 +1,6 @@
-from gmail.mailbox import MailBox
-from gmail.service import GMailService
-from ruleparser import Rule, RuleFilter
+from mail_actions.gmail.mailbox import MailBox
+from mail_actions.gmail.service import GMailService
+from mail_actions.ruleparser import Rule, RuleFilter
 
 
 class RuleEngine:

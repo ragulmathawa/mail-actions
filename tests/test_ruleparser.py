@@ -1,5 +1,5 @@
 import pytest
-import ruleparser
+import mail_actions.ruleparser as ruleparser
 
 
 def test_load_rules():

@@ -1,5 +1,5 @@
 import pytest
-from mailbox import parse_email_address
+from mail_actions.gmail.mailbox import parse_email_address
 
 
 def test_parse_email_address():

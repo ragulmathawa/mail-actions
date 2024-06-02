@@ -2,7 +2,7 @@ import datetime
 from sqlite3 import connect
 import json as json
 from typing import Generator, Iterator, TypedDict
-from gmail.service import GMailService, Message
+from mail_actions.gmail.service import GMailService, Message
 from progress.bar import Bar
 from progress.counter import Counter
 
