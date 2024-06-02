@@ -12,9 +12,21 @@ from rule_engine import RuleEngine
 import ruleparser as ruleparser
 
 def is_sync_needed(profile: Profile, stats: MailBoxStats):
+    """
+    Checks if synchronization is needed based on the gmail last History Id and mailbox lasistoryId stored in the database.
+
+    Args:
+        profile (Profile): The user's profile.
+        stats (MailBoxStats): The statistics of the mailbox.
+
+    Returns:
+        bool: True if synchronization is needed, False otherwise.
+    """
     return stats.get("lastHistoryId") is None or stats.get("lastHistoryId") != profile.get(
         "historyId"
     )
+
+
 def print_welcome(profile: Profile, stats: MailBoxStats):
     print(f"\nWelcome {profile.get('emailAddress')}")
     print(f"Total messages: {profile.get('messagesTotal')}")

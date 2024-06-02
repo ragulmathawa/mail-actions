@@ -21,6 +21,18 @@ class RuleEngine:
 
 
 def build_sql(rule: Rule) -> tuple[str, dict]:
+    """
+    Builds an SQL query on messages table of mailbox and options based on the given rule.
+
+    Args:
+        rule (Rule): The rule object containing the filters and match criteria.
+
+    Returns:
+        tuple[str, dict]: A tuple containing the SQL query and options.
+
+    Raises:
+        Exception: If the filter match criteria is invalid.
+    """
     options = []
     clauses = []
     columns = [
@@ -66,10 +78,21 @@ def build_sql(rule: Rule) -> tuple[str, dict]:
         raise Exception(f"Invalid filter match: {rule.get('match')}")
 
     return sql, options
-    pass
 
 
 def build_string_filter_clause(filter: RuleFilter) -> tuple[str, list]:
+    """
+    Builds a sql where clause and args based on the provided filter
+
+    Args:
+        filter (RuleFilter): The filter object containing the field, operator, and value.
+
+    Returns:
+        tuple[str, list]: A tuple containing the SQL clause and a list of parameter values.
+
+    Raises:
+        Exception: If an invalid field or operator is provided in the filter.
+    """
     columnMap = {
         "date_received": "date_received",
         "date_sent": "date_sent",
@@ -104,6 +127,27 @@ def build_string_filter_clause(filter: RuleFilter) -> tuple[str, list]:
 
 
 def build_date_filter_clause(filter: RuleFilter) -> tuple[str, list]:
+    """
+    Builds a sql where clause based on the provided filter. This works for date comaprisions with relative dates.
+
+    Args:
+        filter (RuleFilter): The filter object containing the field, operator, and value.
+
+    Returns:
+        tuple[str, list]: A tuple containing the filter clause and a list of values to be used in the query.
+
+    Raises:
+        Exception: If an invalid field or operator is provided in the filter.
+
+    Example:
+        filter = {
+            "field": "date_received",
+            "operator": "gt",
+            "value": "2 days"
+        }
+        build_date_filter_clause(filter)
+        # Output: ("internalDate > datetime('now',?)", ["-2 days"])
+    """
     columnMap = {
         "date_received": "internalDate",
         "date_sent": "internalDate",
@@ -142,6 +186,21 @@ def build_date_filter_clause(filter: RuleFilter) -> tuple[str, list]:
 
 
 def is_relative_date(value: str) -> bool:
+    """
+    Check if the given value represents a relative date.
+
+    Args:
+        value (str): The value to be checked.
+
+    Returns:
+        bool: True if the value represents a relative date, False otherwise.
+    Example:
+        is_relative_date("2 days") # True
+        is_relative_date("2 days ago") # False
+        is_relative_date("2022-12-23") # False
+        is_realtive_date("2") # False
+        is_relative_date("2d") # False
+    """
     if not value or value.strip() == "":
         return False
     parts = value.strip().split(" ")

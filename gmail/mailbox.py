@@ -304,11 +304,25 @@ class MailBox:
                 allIds.add(row[0])
         return allIds
 
-    def get_messages_sql(self, sql: str, opts: dict) -> Iterator[Message]:
+    def get_messages_sql(self, sql: str, args: dict) -> Iterator[Message]:
+        """
+        Executes the given SQL query with the provided arguments and returns an iterator of Message objects.
+
+        Args:
+            sql (str): The SQL query to execute.
+            opts (dict): The options to be used in the SQL query.
+
+        Yields:
+            Message: A Message object representing a retrieved message.
+
+        Returns:
+            Iterator[Message]: An iterator of Message objects.
+
+        """
         # print("Executing SQL: ", sql, opts)
         with connect("store.db") as conn:
             cursor = conn.cursor()
-            cursor.execute(sql, opts)
+            cursor.execute(sql, args)
             for row in cursor.fetchall():
                 message = Message(
                     id=row[0],
