@@ -72,6 +72,10 @@ class Message(TypedDict):
     historyId: str
     id: str
     internalDate: str
+    internalTimestamp: str
+    from_: str
+    to: str
+    subject: str
     labelIds: list[str]
     payload: MessagePayload
     raw: str

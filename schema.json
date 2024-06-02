@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "rules": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "match": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "any"
+                            ]
+                        },
+                        "filters": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string",
+                                            "enum": ["from","to","subject","date_received","date_sent"]
+                                        },
+                                        "operator": {
+                                            "type": "string",
+                                            "enum":[
+                                                "contains",
+                                                "ncontains",
+                                                "eq",
+                                                "ne ",
+                                                "gt",
+                                                "lt",
+                                                "gte",
+                                                "lte"
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["field","operator","value"]
+                                }
+                            ]
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum":[
+                                                "move",
+                                                "read",
+                                                "unread"
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type"]
+                                }
+                            ]
+                        }
+                    },
+                    "required": ["name","match","filters","actions"]
+                }
+            ]
+        }
+    },
+    "required": ["rules"]
+}

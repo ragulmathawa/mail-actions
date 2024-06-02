@@ -1,6 +1,7 @@
+import datetime
 from sqlite3 import connect
 import json as json
-from typing import TypedDict
+from typing import Generator, Iterator, TypedDict
 from gmail.service import GMailService, Message
 from progress.bar import Bar
 from progress.counter import Counter
@@ -48,7 +49,8 @@ class MailBox:
                     id TEXT PRIMARY KEY,
                     threadId TEXT,
                     historyId TEXT,
-                    internalDate TEXT,
+                    internalDate DATETIME,
+                    internalTimestamp TEXT,
                     labelIds TEXT,
                     payload__body__data TEXT,
                     payload__body__size INTEGER,
@@ -57,6 +59,9 @@ class MailBox:
                     payload__mimeType TEXT,
                     payload__partId TEXT,
                     payload__parts TEXT,
+                    "from" TEXT,
+                    "to" TEXT,
+                    subject TEXT,
                     raw TEXT,
                     sizeEstimate INTEGER,
                     snippet TEXT
@@ -172,6 +177,23 @@ class MailBox:
         Returns:
             None
         """
+        fromVal = None
+        toVal = None
+        subjectVal = None
+        for header in msg["payload"]["headers"]:
+            if header["name"] == "From":
+                # email address is in the format "Name <email>"
+                fromVal = parse_email_address(header["value"])
+            elif header["name"] == "To":
+                toVal = parse_email_address(header["value"])
+            elif header["name"] == "Subject":
+                subjectVal = header["value"]
+        timestamp = int(msg["internalDate"]) / 1000
+        # Date string of format "YYYY-MM-DD hh:mm:ss"
+        internalDate = datetime.datetime.fromtimestamp(
+            timestamp, datetime.UTC
+        ).strftime("%Y-%m-%d %H:%M:%S")
+
         with connect("store.db") as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -181,6 +203,7 @@ class MailBox:
                     threadId,
                     historyId,
                     internalDate,
+                    internalTimestamp,
                     labelIds,
                     payload__body__data,
                     payload__body__size,
@@ -189,16 +212,20 @@ class MailBox:
                     payload__mimeType,
                     payload__partId,
                     payload__parts,
+                    "from",
+                    "to",
+                    subject,
                     raw,
                     sizeEstimate,
                     snippet
                 )
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """,
                 (
                     msg["id"],
                     msg["threadId"],
                     msg["historyId"],
+                    internalDate,
                     msg["internalDate"],
                     json.dumps(msg["labelIds"]),
                     msg["payload"]["body"].get("data", None),
@@ -208,6 +235,9 @@ class MailBox:
                     msg["payload"]["mimeType"],
                     msg["payload"]["partId"],
                     json.dumps(msg["payload"].get("parts", None)),
+                    fromVal,
+                    toVal,
+                    subjectVal,
                     msg.get("raw", None),
                     msg["sizeEstimate"],
                     msg["snippet"],
@@ -236,7 +266,7 @@ class MailBox:
         Returns:
             A set of message IDs (strings) representing the messages in the remote mailbox.
         """
-        limit = 1000
+        limit = 100
         allIds = set()
         pageToken = None
         counter = Counter("Scanning Gmail Messages: ")
@@ -273,3 +303,55 @@ class MailBox:
             for row in rows:
                 allIds.add(row[0])
         return allIds
+
+    def get_messages_sql(self, sql: str, opts: dict) -> Iterator[Message]:
+        # print("Executing SQL: ", sql, opts)
+        with connect("store.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, opts)
+            for row in cursor.fetchall():
+                message = Message(
+                    id=row[0],
+                    threadId=row[1],
+                    historyId=row[2],
+                    internalDate=row[3],
+                    internalTimestamp=row[4],
+                    from_=row[5],
+                    to=row[6],
+                    subject=row[7],
+                    labelIds=json.loads(row[8]),
+                    payload={
+                        "body": {
+                            "data": row[9],
+                            "size": row[10],
+                            "attachmentId": row[11],
+                        },
+                        "filename": row[12],
+                        "mimeType": row[13],
+                        "partId": row[14],
+                        "parts": json.loads(row[15]),
+                    },
+                    raw=row[16],
+                    sizeEstimate=row[17],
+                    snippet=row[18],
+                )
+                yield message
+        pass
+
+    def apply_action(self, actions: dict, message: Message):
+        pass
+
+
+def parse_email_address(email: str) -> str:
+    """
+    Parses the email address from the provided string.
+
+    Args:
+        email (str): The email string to parse.
+
+    Returns:
+        str: The email address.
+    """
+    if "<" not in email:
+        return email
+    return email.split("<")[1].split(">")[0]

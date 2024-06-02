@@ -8,6 +8,8 @@ import os as os
 from gmail.service import GMailService, Profile
 import auth as auth
 import progress.spinner as spinner
+from rule_engine import RuleEngine
+import ruleparser as ruleparser
 
 def is_sync_needed(profile: Profile, stats: MailBoxStats):
     return stats.get("lastHistoryId") is None or stats.get("lastHistoryId") != profile.get(
@@ -38,12 +40,23 @@ def main():
     service = GMailService(creds)
     mailbox = MailBox(service)
     mailbox.init_db()
+    rule_engine = RuleEngine(mailbox, service)
     stats = mailbox.get_stats()
     profile = service.get_profile()
     print_welcome(profile, stats)
 
     if is_sync_needed(profile, stats):
         mailbox.sync()
+    try:
+        rules = ruleparser.load_rules()
+        if len(rules) == 0:
+            print("No rules found")
+            return
+        for rule in rules:
+            print(f"Applying rule: {rule.get('name')}")
+            rule_engine.apply_rule(rule)
+    except Exception as e:
+        raise e
 
 if __name__ == "__main__":
     try:
